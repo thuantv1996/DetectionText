@@ -2,6 +2,7 @@ package com.example.thuan.detectnamecard;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.util.Log;
 
 import Core.Block;
 import Core.Text;
+import MachineLearning.SVM;
 import Ocr.IOcrService;
 import Ocr.TesseractOcr;
 import ProcessImage.IProcessImage;
@@ -22,6 +24,9 @@ import TextDetection.TextDetection;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.ml.CvSVM;
 
 import java.util.List;
 
@@ -67,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ClickTest();
+                ClickTest2();
             }
         });
     }
@@ -92,5 +97,27 @@ public class MainActivity extends AppCompatActivity {
         textDetection = new TextDetection();
         Text text = textDetection.getText(tesseract.getContent(input),tesseract.getInfo(input),input.getWidth(),input.getHeight());
         int i=0;
+    }
+
+    private void ClickTest2()
+    {
+        SVM svm = new SVM();
+        svm.create();
+        Mat trainMat = new Mat(5,2, CvType.CV_32FC1);
+        Mat labelsMat = new Mat(5,1, CvType.CV_32SC1);
+
+        float[][] train={{1,1},{5,1},{1,7},{7,5},{12,5}};
+        float[] label={0,0,0,1,1};
+
+        for(int i=0;i<5;i++)
+        {
+            trainMat.put(i,0,train[i][0]);
+            trainMat.put(i,1,train[i][1]);
+            labelsMat.put(i,0,label[i]);
+        }
+
+        svm.train(trainMat,labelsMat);
+        svm.save(Environment.getExternalStorageDirectory()+"text.xml");
+        // train();
     }
 }
